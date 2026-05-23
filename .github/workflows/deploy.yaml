@@ -2,7 +2,7 @@ name: Deploy to VPS
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   deploy:
@@ -18,3 +18,4 @@ jobs:
           script: |
             cd ~/nginx-test/beget-backend
             git pull
+            docker compose up -d --build

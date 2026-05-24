@@ -13,9 +13,9 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
+          username: root
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd ~/test-server/beget-backend
-            git pull
-            docker compose up -d --build
+            whoami
+            pwd
+            ls -la

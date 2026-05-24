@@ -16,6 +16,6 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd ~/nginx-test/beget-backend
+            cd ~/test-server/beget-backend
             git pull
             docker compose up -d --build

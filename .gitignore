@@ -1,5 +1,8 @@
-#files
+# FILES
 secret_file.yaml
 
 node_modules
 dist
+
+# IDE
+.idea

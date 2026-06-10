@@ -4,7 +4,7 @@ import { Pool } from "pg";
 const app = express();
 const PORT = 3000;
 
-app.use(express.json({ limit: "10kb" }));
+app.use(express.json({ limit: "40kb" }));
 
 const pool = new Pool({
   host: "postgres",

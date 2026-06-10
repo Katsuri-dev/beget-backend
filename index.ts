@@ -1,7 +1,16 @@
 import express from "express";
+import { Pool } from "pg";
 
 const app = express();
 const PORT = 3000;
+
+const pool = new Pool({
+  host: "postgres",
+  port: 5432,
+  database: "appdb",
+  user: "appuser",
+  password: "password",
+});
 
 app.use(express.json());
 
@@ -38,6 +47,16 @@ app.get("/", (_, res) => {
 });
 app.get("/users", (_, res) => {
   res.json(users)
+});
+
+app.get("/users-new", async (_, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM users ORDER BY id");
+    res.json(result.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "DB error" });
+  }
 });
 
 app.post("/users", (req, res) => {

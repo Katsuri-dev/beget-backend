@@ -9,6 +9,7 @@ services:
     image: postgres:18-alpine
     restart: unless-stopped
     environment:
+      DB_HOST: postgres
       POSTGRES_DB: appdb
       POSTGRES_USER: appuser
       POSTGRES_PASSWORD: password

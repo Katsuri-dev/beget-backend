@@ -1,8 +1,13 @@
 import express from "express";
+import helmet from "helmet";
 import { Pool } from "pg";
 
 const app = express();
 const PORT = 3000;
+
+app.use(helmet());
+
+app.use(express.json({ limit: "10kb" }));
 
 const pool = new Pool({
   host: "postgres",
@@ -12,14 +17,27 @@ const pool = new Pool({
   password: "password",
 });
 
-app.use(express.json());
+function validateName(name: any): string | null {
+  if (typeof name !== "string") return "Name must be string";
+
+  const trimmed = name.trim();
+
+  if (!trimmed) return "Name is required";
+  if (trimmed.length > 50) return "Name too long";
+
+  // защита от мусора / HTML / скриптов
+  if (/[<>]/.test(trimmed)) {
+    return "Invalid characters";
+  }
+
+  return null;
+}
 
 const GET_PAYLOAD = `
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Users CRUD</title>
 </head>
 
@@ -27,93 +45,87 @@ const GET_PAYLOAD = `
     <h1>Express server is working</h1>
     <p>Port: ${PORT}</p>
 
-    <div>
-        <button id="get-users-btn">Get users</button>
-    </div>
+    <button id="get-users-btn">Get users</button>
 
     <hr>
 
     <form id="create-user-form">
-        <input
-            id="user-name"
-            type="text"
-            placeholder="user name"
-        />
-        <button type="submit">
-            Submit
-        </button>
+        <input id="user-name" placeholder="user name" />
+        <button type="submit">Submit</button>
     </form>
 
     <hr>
 
     <div id="users-list"></div>
 
-    <script>
-        const usersList = document.getElementById("users-list");
+<script>
+const usersList = document.getElementById("users-list");
 
-        async function loadUsers() {
-            const response = await fetch("/users");
-            const users = await response.json();
+function escapeHtml(str) {
+    return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
 
-            usersList.innerHTML = "";
+async function loadUsers() {
+    const res = await fetch("/users");
+    const users = await res.json();
 
-            users.forEach(user => {
-                const div = document.createElement("div");
+    usersList.innerHTML = "";
 
-                div.innerHTML = \`
-                    <span>\${user.id}: \${user.name}</span>
+    users.forEach(user => {
+        const div = document.createElement("div");
 
-                    <button onclick="deleteUser(\${user.id})">
-                        Delete
-                    </button>
+        const span = document.createElement("span");
+        span.textContent = user.id + ": " + user.name; // SAFE (no innerHTML)
 
-                    <hr>
-                \`;
+        const btn = document.createElement("button");
+        btn.textContent = "Delete";
+        btn.onclick = () => deleteUser(user.id);
 
-                usersList.appendChild(div);
-            });
-        }
+        div.appendChild(span);
+        div.appendChild(btn);
 
-        async function deleteUser(id) {
-            await fetch('/users/' + id, {
-                method: 'DELETE'
-            });
-        
-            loadUsers();
-        }
+        usersList.appendChild(div);
+    });
+}
 
-        document
-            .getElementById("get-users-btn")
-            .addEventListener("click", loadUsers);
+async function deleteUser(id) {
+    await fetch("/users/" + id, { method: "DELETE" });
+    loadUsers();
+}
 
-        document
-          .getElementById("create-user-form")
-          .addEventListener("submit", async (e) => {
-              e.preventDefault();
-      
-              const input = document.getElementById("user-name");
-      
-              await fetch('/users', {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({
-                      name: input.value
-                  })
-              });
-      
-              input.value = "";
-      
-              loadUsers();
-          });
-    </script>
+document.getElementById("get-users-btn")
+    .addEventListener("click", loadUsers);
+
+document.getElementById("create-user-form")
+    .addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const input = document.getElementById("user-name");
+
+        await fetch("/users", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ name: input.value })
+        });
+
+        input.value = "";
+        loadUsers();
+    });
+</script>
+
 </body>
 </html>
 `;
 
 app.get("/", (_, res) => {
-  res.send(GET_PAYLOAD)
+  res.send(GET_PAYLOAD);
 });
 
 app.get("/users", async (_, res) => {
@@ -131,20 +143,16 @@ app.get("/users", async (_, res) => {
 
 app.post("/users", async (req, res) => {
   try {
-    const name = req.body.name?.trim();
+    const error = validateName(req.body.name);
 
-    if (!name) {
-      return res.status(400).json({
-        error: "Name is required",
-      });
+    if (error) {
+      return res.status(400).json({ error });
     }
 
+    const name = req.body.name.trim();
+
     const result = await pool.query(
-        `
-      INSERT INTO users (name)
-      VALUES ($1)
-      RETURNING *
-      `,
+        `INSERT INTO users (name) VALUES ($1) RETURNING *`,
         [name]
     );
 
@@ -157,25 +165,22 @@ app.post("/users", async (req, res) => {
 
 app.delete("/users/:id", async (req, res) => {
   try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
+
     const result = await pool.query(
-        `
-      DELETE FROM users
-      WHERE id = $1
-      RETURNING *
-      `,
-        [req.params.id]
+        `DELETE FROM users WHERE id = $1 RETURNING *`,
+        [id]
     );
 
     if (result.rowCount === 0) {
-      return res.status(404).json({
-        error: "User not found",
-      });
+      return res.status(404).json({ error: "User not found" });
     }
 
-    res.json({
-      success: true,
-      deleted: result.rows[0],
-    });
+    res.json({ success: true });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "DB error" });
@@ -183,5 +188,5 @@ app.delete("/users/:id", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

@@ -6,4 +6,4 @@ postgreSQL
 NestJs
 
 server run on: http://109.172.6.33:3000/
-Nginx return HTML file on that path.
+Server return HTML file on that path.

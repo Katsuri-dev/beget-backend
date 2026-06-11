@@ -1,13 +1,19 @@
 import path from "path";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import type { Configuration } from "webpack";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const config: Configuration = {
-    entry: "./src/index.ts",
+    entry: {
+        main: "./client/client.ts",
+    },
 
     output: {
-        filename: "index.js",
-        path: path.resolve(__dirname, "dist"),
+        filename: "[name].[contenthash].js",
+        path: path.resolve(__dirname, "dist/client"),
         clean: true
     },
 
@@ -27,7 +33,8 @@ export const config: Configuration = {
 
     plugins: [
         new HtmlWebpackPlugin({
-            template: "./src/index.html"
+            template: "./client/index.html",
+            scriptLoading: "defer",
         })
     ],
 

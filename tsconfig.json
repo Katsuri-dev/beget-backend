@@ -1,26 +1,11 @@
+// root tsconfig.json
+
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "module": "nodenext",
-    "target": "esnext",
-    "types": [],
+    "module": "es2022",
+    "types": ["node"]
+  },
 
-
-    "rootDir": ".",
-    "outDir": "dist",
-    "sourceMap": false,
-
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-
-    // Style Options
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-
-    "strict": true,
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true,
-  }
+  "include": ["webpack.config.ts"]
 }

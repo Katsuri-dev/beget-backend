@@ -1,5 +1,7 @@
 const usersList = document.getElementById("users-list");
 
+console.log('Version with split code');
+
 function renderUsers(users: any) {
     if (!usersList) {
         console.log('No users list');

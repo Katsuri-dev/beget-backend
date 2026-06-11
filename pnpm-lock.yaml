@@ -224,10 +224,10 @@ importers:
         specifier: 8.20.0
         version: 8.20.0
       html-webpack-plugin:
-        specifier: ^5.6.7
+        specifier: 5.6.7
         version: 5.6.7(webpack@5.107.2)
       ts-loader:
-        specifier: ^9.6.0
+        specifier: 9.6.0
         version: 9.6.0(typescript@6.0.3)(webpack@5.107.2)
       ts-node:
         specifier: 10.9.2
@@ -236,10 +236,10 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
       webpack:
-        specifier: ^5.107.2
+        specifier: 5.107.2
         version: 5.107.2(webpack-cli@7.0.3)
       webpack-cli:
-        specifier: ^7.0.3
+        specifier: 7.0.3
         version: 7.0.3(webpack@5.107.2)
 
 packages:

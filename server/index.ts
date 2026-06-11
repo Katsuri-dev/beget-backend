@@ -1,9 +1,15 @@
 import express from "express";
 import path from "path";
 import { Pool } from "pg";
+import { fileURLToPath } from "url";
+
 
 const app = express();
 const PORT = 3000;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const clientPath = path.resolve(__dirname, "../client");
 
 app.use(express.json({ limit: "40kb" }));

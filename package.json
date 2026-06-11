@@ -2,11 +2,13 @@
    "name": "beget-backend",
    "version": "1.0.0",
    "description": "",
-   "main": "index.js",
+   "main": "server/index.ts",
    "scripts": {
-      "build": "tsc",
-      "start": "node dist/index.js",
-      "dev": "node index.ts"
+      "build:client": "webpack",
+      "build:server": "tsc --project server/tsconfig.json",
+      "build": "npm run build:client && npm run build:server",
+      "dev": "node server/index.ts",
+      "prod:start": "node dist/server/index.js"
    },
    "keywords": [],
    "author": "",
@@ -21,7 +23,11 @@
       "@types/express": "5.0.6",
       "@types/node": "25.9.1",
       "@types/pg": "8.20.0",
+      "html-webpack-plugin": "5.6.7",
+      "ts-loader": "9.6.0",
       "ts-node": "10.9.2",
-      "typescript": "6.0.3"
+      "typescript": "6.0.3",
+      "webpack": "5.107.2",
+      "webpack-cli": "7.0.3"
    }
 }

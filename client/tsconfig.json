@@ -1,0 +1,16 @@
+// root/client tsconfig.json
+
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+
+    "rootDir": ".",
+    "outDir": "../dist",
+    "allowImportingTsExtensions": false,
+    "noEmit": false,
+  },
+  "include": ["./**/*"]
+}

@@ -1,10 +1,13 @@
 import express from "express";
+import path from "path";
 import { Pool } from "pg";
 
 const app = express();
 const PORT = 3000;
+const clientPath = path.resolve(__dirname, "../client");
 
-app.use(express.json({ limit: "10kb" }));
+app.use(express.json({ limit: "40kb" }));
+app.use(express.static(clientPath));
 
 const pool = new Pool({
   host: "postgres",
@@ -25,91 +28,8 @@ function validateName(name: any) {
   return null;
 }
 
-const HTML = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Users CRUD</title>
-</head>
-
-<body>
-  <h1>Users</h1>
-
-  <button id="get-users-btn" type="button">Load users</button>
-
-  <hr>
-
-  <form id="create-user-form">
-    <input id="user-name" placeholder="user name" />
-    <button type="submit">Add</button>
-  </form>
-
-  <hr>
-
-  <div id="users-list"></div>
-
-<script>
-const usersList = document.getElementById("users-list");
-
-function renderUsers(users) {
-  usersList.replaceChildren();
-
-  users.forEach(user => {
-    const div = document.createElement("div");
-
-    const span = document.createElement("span");
-    span.textContent = user.id + ": " + user.name;
-
-    const btn = document.createElement("button");
-    btn.textContent = "Delete";
-    btn.addEventListener("click", () => deleteUser(user.id));
-
-    div.appendChild(span);
-    div.appendChild(btn);
-
-    usersList.appendChild(div);
-  });
-}
-
-async function loadUsers() {
-  const res = await fetch("/users");
-  const users = await res.json();
-
-  renderUsers(users);
-}
-
-async function deleteUser(id) {
-  await fetch("/users/" + id, { method: "DELETE" });
-  loadUsers();
-}
-
-document.getElementById("get-users-btn")
-  .addEventListener("click", loadUsers);
-
-document.getElementById("create-user-form")
-  .addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const input = document.getElementById("user-name");
-
-    await fetch("/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: input.value })
-    });
-
-    input.value = "";
-    loadUsers();
-  });
-</script>
-
-</body>
-</html>
-`;
-
 app.get("/", (_, res) => {
-  res.send(HTML);
+  res.sendFile(path.join(clientPath, "index.html"));
 });
 
 app.get("/users", async (_, res) => {
